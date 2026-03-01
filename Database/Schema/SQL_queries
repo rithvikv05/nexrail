@@ -9,13 +9,6 @@ CREATE TABLE users (
 );
 
 
-CREATE TABLE login_credential (
-    user_id INT,
-    email TEXT,
-    password TEXT,
-    phone TEXT
-);
-
 CREATE TABLE zone (
     zone_id TEXT,
     zone_name TEXT
@@ -50,10 +43,6 @@ CREATE TABLE class (
 CREATE TABLE train_fare (
    fare_id SERIAL,
    class_id INT,
-   from_station TEXT,
-   to_station TEXT,
-   from_date DATE,
-   to_date DATE,
    fare NUMERIC
 );
 
@@ -92,13 +81,6 @@ CREATE TABLE payment_info (
    fare NUMERIC,
    mode TEXT,
    confirmation_status TEXT
-);
-
-
-
-CREATE TABLE refund_rule (
-   transaction_number TEXT,
-   refund_status TEXT
 );
 
 
