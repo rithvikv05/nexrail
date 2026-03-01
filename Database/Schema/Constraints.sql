@@ -1,9 +1,153 @@
+--Primary keys
+ALTER TABLE users
+ADD PRIMARY KEY (user_id);
+
+ALTER TABLE zone
+ADD PRIMARY KEY (zone_id);
+
+ALTER TABLE station
+ADD PRIMARY KEY (station_code);
+
+ALTER TABLE train
+ADD PRIMARY KEY (train_no);
+
+ALTER TABLE class
+ADD PRIMARY KEY (class_id);
+
+ALTER TABLE ticket_reservation
+ADD PRIMARY KEY (pnr_no);
+
+ALTER TABLE passenger
+ADD PRIMARY KEY (passenger_id);
+
+ALTER TABLE refund_rule
+ADD PRIMARY KEY (transaction_number);
+
+ALTER TABLE train_route
+ADD PRIMARY KEY (details_id);
+
+ALTER TABLE seat_availability
+ADD PRIMARY KEY (details_id);
+
+ALTER TABLE train_fare
+ADD PRIMARY KEY (fare_id);
+
+--Foreign keys
+ALTER TABLE station
+ADD CONSTRAINT fk_station_zone
+FOREIGN KEY (zone_id)
+REFERENCES zone(zone_id);
+
+ALTER TABLE train
+ADD CONSTRAINT fk_train_source
+FOREIGN KEY (source_station_id)
+REFERENCES station(station_code);
+
+ALTER TABLE train
+ADD CONSTRAINT fk_train_destination
+FOREIGN KEY (destination_station_id)
+REFERENCES station(station_code);
+
+ALTER TABLE train_route
+ADD CONSTRAINT fk_route_train
+FOREIGN KEY (train_code)
+REFERENCES train(train_no);
+
+ALTER TABLE train_route
+ADD CONSTRAINT fk_route_station
+FOREIGN KEY (via_station_code)
+REFERENCES station(station_code);
+
+ALTER TABLE seat_availability
+ADD CONSTRAINT fk_seat_train
+FOREIGN KEY (train_code)
+REFERENCES train(train_no);
+
+ALTER TABLE seat_availability
+ADD CONSTRAINT fk_seat_class
+FOREIGN KEY (class_id)
+REFERENCES class(class_id);
+
+ALTER TABLE train_fare
+ADD CONSTRAINT fk_fare_class
+FOREIGN KEY (class_id)
+REFERENCES class(class_id);
+
+ALTER TABLE train_fare
+ADD CONSTRAINT fk_fare_from
+FOREIGN KEY (from_station)
+REFERENCES station(station_code);
+
+ALTER TABLE train_fare
+ADD CONSTRAINT fk_fare_to
+FOREIGN KEY (to_station)
+REFERENCES station(station_code);
+
+ALTER TABLE ticket_reservation
+ADD CONSTRAINT fk_ticket_user
+FOREIGN KEY (user_id)
+REFERENCES users(user_id);
+
+ALTER TABLE ticket_reservation
+ADD CONSTRAINT fk_ticket_train
+FOREIGN KEY (train_id)
+REFERENCES train(train_no);
+
+ALTER TABLE ticket_reservation
+ADD CONSTRAINT fk_ticket_from
+FOREIGN KEY (from_station)
+REFERENCES station(station_code);
+
+ALTER TABLE ticket_reservation
+ADD CONSTRAINT fk_ticket_to
+FOREIGN KEY (to_station)
+REFERENCES station(station_code);
+
+ALTER TABLE ticket_reservation
+ADD CONSTRAINT fk_class
+FOREIGN KEY (class_id)
+REFERENCES class(class_id);
+
+ALTER TABLE passenger
+ADD CONSTRAINT fk_passenger_ticket
+FOREIGN KEY (pnr_no)
+REFERENCES ticket_reservation(pnr_no);
+
+ALTER TABLE payment_info
+ADD CONSTRAINT fk_payment_ticket
+FOREIGN KEY (pnr_no)
+REFERENCES ticket_reservation(pnr_no);
+
+ALTER TABLE payment_info
+ADD CONSTRAINT fk_payment_user
+FOREIGN KEY (user_id)
+REFERENCES users(user_id);
+
+ALTER TABLE refund_rule
+ADD CONSTRAINT fk_refund_payment
+FOREIGN KEY (transaction_number)
+REFERENCES payment_info(transaction_number);
+
+--Not NULL constraints
+ALTER TABLE ticket_reservation
+ALTER COLUMN class_id SET NOT NULL;
+
+ALTER TABLE seat_availability
+ADD COLUMN journey_date DATE NOT NULL;
+
+ALTER TABLE payment_info
+ALTER COLUMN fare SET NOT NULL;
+
+ALTER TABLE payment_info
+ALTER COLUMN mode SET NOT NULL;
+
+ALTER TABLE payment_info
+ALTER COLUMN confirmation_status SET NOT NULL;
+
+--Check/domain constraints
 ALTER TABLE public.class
 ADD CONSTRAINT seats_positive
 CHECK (seats_per_coach > 0);
-
-
-—Passenger table:
 
 ALTER TABLE passenger
 ADD CONSTRAINT pax_name_domain
@@ -20,26 +164,18 @@ ALTER TABLE passenger
 ADD CONSTRAINT fare_domain
 CHECK (fare > 0);
 
-—PAYMENT INFO
 ALTER TABLE payment_info
-
--- Fare must be positive
-ALTER COLUMN fare SET NOT NULL,
 ADD CONSTRAINT chk_fare_positive
-CHECK (fare > 0),
+CHECK (fare > 0);
 
--- Mode must be from allowed set
-ALTER COLUMN mode SET NOT NULL,
+ALTER TABLE payment_info
 ADD CONSTRAINT chk_payment_mode
-CHECK (mode IN ('UPI', 'Credit Card', 'Debit Card', 'Net Banking', 'Cash')),
+CHECK (mode IN ('UPI', 'Credit Card', 'Debit Card', 'Net Banking', 'Cash'));
 
--- Confirmation status must be controlled
-ALTER COLUMN confirmation_status SET NOT NULL,
+ALTER TABLE payment_info
 ADD CONSTRAINT chk_confirmation_status
 CHECK (confirmation_status IN ('Pending', 'SUCCESS', 'FAILED','Confirmed','Cancelled'));
 
-—search_history
-—seat_availability
 ALTER TABLE seat_availability
 ADD CONSTRAINT chk_all_seats_non_negative
 CHECK (
@@ -49,7 +185,6 @@ CHECK (
     "3ac" >= 0
 );
 
-—ticket reservation
 ALTER TABLE ticket_reservation
 ADD CONSTRAINT chk_date_and_distance_valid
 CHECK (
@@ -57,35 +192,30 @@ CHECK (
     distance >= 0
 );
 
-—train_route
 ALTER TABLE train_route
 ADD CONSTRAINT chk_km_from_origin_non_negative
 CHECK (km_from_origin >= 0);
 
-—users
 ALTER TABLE users
-
--- Name must not be empty
 ADD CONSTRAINT chk_name_not_empty
-CHECK (length(trim(name)) > 0),
+CHECK (length(trim(name)) > 0);
 
--- Phone: exactly 10 digits (India assumption)
+ALTER TABLE users
 ADD CONSTRAINT chk_phone_format
-CHECK (phone ~ '^[0-9]{10}$'),
+CHECK (phone ~ '^[0-9]{10}$');
 
--- Age must be realistic
+ALTER TABLE users
 ADD CONSTRAINT chk_age_valid
-CHECK (age BETWEEN 0 AND 120),
+CHECK (age BETWEEN 0 AND 120);
 
--- Gender restricted values
+ALTER TABLE users
 ADD CONSTRAINT chk_gender_valid
-CHECK (gender IN ('M', 'F', 'O')),
+CHECK (gender IN ('M', 'F', 'O'));
 
-
--- Email basic format validation
+ALTER TABLE users
 ADD CONSTRAINT chk_email_format
-CHECK (email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+CHECK (email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
 
--- Password must not be empty
+ALTER TABLE users
 ADD CONSTRAINT chk_password_not_empty
 CHECK (length(trim(password)) > 0);
