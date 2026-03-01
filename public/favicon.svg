@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Background circle -->
+  <rect width="64" height="64" rx="14" fill="#f97316"/>
+  <!-- Train body -->
+  <rect x="13" y="18" width="38" height="24" rx="5" fill="white"/>
+  <!-- Cab window -->
+  <rect x="36" y="22" width="10" height="8" rx="2" fill="#f97316"/>
+  <!-- Passenger windows -->
+  <rect x="16" y="22" width="7" height="6" rx="1.5" fill="#f97316"/>
+  <rect x="26" y="22" width="7" height="6" rx="1.5" fill="#f97316"/>
+  <!-- Door line -->
+  <rect x="23" y="30" width="1.5" height="12" rx="0.75" fill="#f97316"/>
+  <!-- Nose / front bump -->
+  <rect x="49" y="24" width="4" height="12" rx="2" fill="white"/>
+  <!-- Wheels -->
+  <circle cx="21" cy="45" r="5" fill="#1c1c1c"/>
+  <circle cx="21" cy="45" r="2.5" fill="#f97316"/>
+  <circle cx="43" cy="45" r="5" fill="#1c1c1c"/>
+  <circle cx="43" cy="45" r="2.5" fill="#f97316"/>
+  <!-- Rail -->
+  <rect x="8" y="49" width="48" height="2.5" rx="1.25" fill="white" opacity="0.5"/>
+</svg>
