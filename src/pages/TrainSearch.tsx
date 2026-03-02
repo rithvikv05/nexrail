@@ -14,7 +14,7 @@ interface TrainResult {
   departure_time: string;
   arrival_time: string;
 }
-interface SearchMeta { from: string; to: string; date: string; classCode: string; }
+interface SearchMeta { from: string; to: string; date: string; }
 
 const CLASS_BOGIES = [
   { code: "1A", label: "AC 1st",  price: 3000, color: "#9a3412", count: 2, classId: 1 },
@@ -188,6 +188,7 @@ const TrainSearch = () => {
               type="date"
               value={currentDate}
               onChange={e => handleDateChange(e.target.value)}
+              onClick={e => { try { (e.target as HTMLInputElement).showPicker(); } catch {} }}
               className="text-base md:text-xl font-black font-mono text-orange-500 bg-transparent border-none outline-none cursor-pointer w-full text-center"
             />
           </div>
@@ -286,10 +287,6 @@ const TrainSearch = () => {
                         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top,theme(colors.primary.DEFAULT/0.12),transparent_60%)]" />
 
                         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
-                          <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                            <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                            Scroll to explore · tap a coach to lock class
-                          </p>
                           <p className="text-[10px] font-mono uppercase tracking-widest text-primary/90">
                             Composition: 2×1A · 3×2A · 3×3A · 4×SL
                           </p>
@@ -336,11 +333,11 @@ const TrainSearch = () => {
                           })}
                         </div>
 
-                        {/* Scrollable train */}
-                        <div className="relative z-10 overflow-x-auto rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm px-3 py-6">
+                        {/* Train bogies */}
+                        <div className="relative z-10 rounded-xl border border-border/60 bg-card/60 backdrop-blur-sm px-3 py-6">
                           <div className="absolute left-4 right-4 top-1/2 -translate-y-1/2 h-[4px] rounded-full bg-gradient-to-r from-transparent via-primary/40 to-transparent shadow-[0_0_18px_theme(colors.primary.DEFAULT/0.35)]" />
                           <div className="relative pb-6" style={{ minWidth: `${bogies.length * 98}px` }}>
-                            <div className="flex items-end gap-2.5">
+                            <div className="flex flex-wrap items-end gap-2.5">
                               {bogies.map((b, idx) => {
                                 const isSpec = b.code === "ENG" || b.code === "GRD";
                                 const isSelected = selectedBogie?.bogieId === b.id && selectedBogie?.trainNo === train.train_no;

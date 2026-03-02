@@ -1,20 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ArrowRightLeft, Calendar, Search, MapPin, Loader2, LayoutList } from "lucide-react";
+import { ArrowRightLeft, Calendar, Search, MapPin, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
-
-// Maps to public.class table (class_code, class_name)
-const CLASS_OPTIONS = [
-  { code: "SL",  name: "Sleeper Class" },
-  { code: "3A",  name: "AC 3 Tier" },
-  { code: "2A",  name: "AC 2 Tier" },
-  { code: "1A",  name: "AC First Class" },
-  { code: "CC",  name: "AC Chair Car" },
-  { code: "EC",  name: "Executive Chair Car" },
-];
 
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -27,14 +17,13 @@ interface TrainResult {
   departure_time: string;
   arrival_time: string;
 }
-interface SearchMeta { from: string; to: string; date: string; classCode: string; }
+interface SearchMeta { from: string; to: string; date: string; }
 
 const HeroSearch = () => {
   const navigate = useNavigate();
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [date, setDate] = useState("");
-  const [classCode, setClassCode] = useState("");
   const [fromSuggestions, setFromSuggestions] = useState<Station[]>([]);
   const [toSuggestions, setToSuggestions] = useState<Station[]>([]);
   const [fromHistory, setFromHistory] = useState<HistoryItem[]>([]);
@@ -49,6 +38,14 @@ const HeroSearch = () => {
   const { user } = useAuth();
   const { theme } = useTheme();
   const isDark = theme === "dark";
+
+  // Track viewport width so train animation uses plain px (calc() breaks Framer interpolation)
+  const [vw, setVw] = useState(() => typeof window !== "undefined" ? window.innerWidth : 1440);
+  useEffect(() => {
+    const onResize = () => setVw(window.innerWidth);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -171,7 +168,7 @@ const HeroSearch = () => {
     const results: TrainResult[] = (data || [])
       .map((r: TrainResult) => ({ ...r, train_no: String(r.train_no) }))
       .filter((r: TrainResult) => { if (seen.has(r.train_no)) return false; seen.add(r.train_no); return true; });
-    navigate("/trains", { state: { results, meta: { from, to, date, classCode } } });
+    navigate("/trains", { state: { results, meta: { from, to, date } } });
   };
 
   const DropdownList = ({ items, onSelect }: { items: Station[]; onSelect: (s: Station) => void }) => (
@@ -305,21 +302,14 @@ const HeroSearch = () => {
                   )}
                 </div>
 
-                {/* Date + Class */}
+                {/* Date */}
                 <div className="flex gap-2">
                   <div className="relative flex-1 group">
                     <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors pointer-events-none" />
                     <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
+                      onClick={(e) => { try { (e.target as HTMLInputElement).showPicker(); } catch {} }}
                       min={new Date().toISOString().split("T")[0]}
-                      className="w-full bg-transparent border border-border rounded-xl py-3.5 pl-11 pr-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 font-mono text-sm transition-all [&::-webkit-calendar-picker-indicator]:opacity-50" />
-                  </div>
-                  <div className="relative group w-36">
-                    <LayoutList className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                    <select value={classCode} onChange={(e) => setClassCode(e.target.value)}
-                      className="w-full bg-transparent border border-border rounded-xl py-3.5 pl-9 pr-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 font-mono text-sm appearance-none transition-all [&>option]:bg-background">
-                      <option value="">All</option>
-                      {CLASS_OPTIONS.map((c) => <option key={c.code} value={c.code}>{c.code}</option>)}
-                    </select>
+                      className="w-full bg-transparent border border-border rounded-xl py-3.5 pl-11 pr-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 font-mono text-sm transition-all cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:cursor-pointer" />
                   </div>
                 </div>
 
@@ -336,166 +326,215 @@ const HeroSearch = () => {
 
       {/* ════════════ ANIMATED TRAIN DIORAMA ════════════ */}
       <div className="relative w-full h-56 overflow-hidden pointer-events-none select-none" style={{ zIndex: 5 }}>
-        {/* Sky fade — night in dark mode */}
+
+        {/* Top fade mask — dissolves diorama top edge into page background */}
+        <div className="absolute top-0 left-0 right-0 h-40 z-20 pointer-events-none"
+          style={{ background: "linear-gradient(to bottom, var(--background) 0%, var(--background) 18%, transparent 100%)" }} />
+
+        {/* Sky */}
         <div className={`absolute inset-0 transition-colors duration-700 ${
           isDark
-            ? "bg-gradient-to-b from-slate-900/80 via-slate-800/60 to-slate-900/80"
+            ? "bg-gradient-to-b from-transparent via-slate-900/70 to-slate-800/85"
             : "bg-gradient-to-b from-transparent via-orange-50/40 to-orange-100/70"
         }`} />
 
-        {/* Horizon hill silhouette */}
-        <svg className="absolute bottom-20 left-0 w-full" height="60" viewBox="0 0 1440 60" preserveAspectRatio="none">
-          <path d="M0,60 Q180,10 360,38 Q540,65 720,22 Q900,0 1080,30 Q1260,58 1440,18 L1440,60 Z"
-            fill={isDark ? "rgba(15,20,40,0.7)" : "rgba(249,115,22,0.07)"} />
+        {/* Horizon hills */}
+        <svg className="absolute bottom-16 left-0 w-full" height="70" viewBox="0 0 1440 70" preserveAspectRatio="none">
+          <path d="M0,70 Q200,15 400,42 Q600,68 800,20 Q1000,0 1200,32 Q1380,58 1440,24 L1440,70 Z"
+            fill={isDark ? "rgba(12,18,36,0.85)" : "rgba(249,115,22,0.07)"} />
         </svg>
 
-        {/* Scrolling telegraph poles + catenary wires */}
-        <motion.div className="absolute bottom-14 flex gap-28"
-          animate={{ x: [0, -224] }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }}>
-          {Array.from({ length: 18 }).map((_, i) => (
-            <div key={i} className="relative shrink-0" style={{ width: 1 }}>
+        {/* ── TREES — fixed 30px-per-tree tile so -90px = exactly 3 trees, perfectly seamless ── */}
+        <motion.div className="absolute flex items-end" style={{ bottom: "52px" }}
+          animate={{ x: [0, -90] }}
+          transition={{ duration: 3.2, repeat: Infinity, ease: "linear", repeatDelay: 0 }}>
+          {Array.from({ length: 62 }).map((_, i) => {
+            const heights = [42, 28, 38];
+            const h = heights[i % 3];
+            const w = 18;
+            const tc = isDark
+              ? ["rgba(22,75,38,0.95)", "rgba(18,62,30,0.95)", "rgba(14,50,24,1)"]
+              : ["rgba(48,105,54,0.55)", "rgba(40,92,46,0.65)", "rgba(32,78,38,0.72)"];
+            const trunk = isDark ? "rgba(55,35,18,0.9)" : "rgba(110,72,30,0.55)";
+            return (
+              <div key={i} className="shrink-0 flex flex-col items-center" style={{ width: 18, marginRight: 12 }}>
+                <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none">
+                  <polygon points={`${w/2},0 0,${h*0.44} ${w},${h*0.44}`} fill={tc[0]} />
+                  <polygon points={`${w/2},${h*0.28} 0,${h*0.70} ${w},${h*0.70}`} fill={tc[1]} />
+                  <polygon points={`${w/2},${h*0.50} 0,${h} ${w},${h}`} fill={tc[2]} />
+                </svg>
+                <div style={{ width: 3, height: 7, background: trunk }} />
+              </div>
+            );
+          })}
+        </motion.div>
 
-              {/* ── DARK MODE: spotlight cone ── */}
+        {/* ── TELEGRAPH POLES — tile=68px ── */}
+        <motion.div className="absolute bottom-14 flex" style={{ gap: "67px" }}
+          animate={{ x: [0, -68] }}
+          transition={{ duration: 1.6, repeat: Infinity, ease: "linear", repeatDelay: 0 }}>
+          {Array.from({ length: 24 }).map((_, i) => (
+            <div key={i} className="relative shrink-0" style={{ width: 1 }}>
               {isDark && (
-                <svg
-                  className="absolute overflow-visible pointer-events-none"
-                  style={{ top: 0, left: 0 }}
-                  width="0" height="0"
-                >
+                <svg className="absolute overflow-visible pointer-events-none" style={{ top: 0, left: 0 }} width="0" height="0">
                   <defs>
                     <linearGradient id={`cone-${i}`} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="rgba(255,228,100,0.28)" />
-                      <stop offset="80%" stopColor="rgba(255,228,100,0.06)" />
+                      <stop offset="0%" stopColor="rgba(255,228,100,0.20)" />
+                      <stop offset="70%" stopColor="rgba(255,228,100,0.04)" />
                       <stop offset="100%" stopColor="rgba(255,228,100,0)" />
                     </linearGradient>
                   </defs>
-                  {/* cone fans from top of pole downward ~130px to ground */}
-                  <polygon points="0,0 -44,130 44,130" fill={`url(#cone-${i})`} />
+                  <polygon points="0,0 -38,120 38,120" fill={`url(#cone-${i})`} />
                 </svg>
               )}
-
-              {/* Vertical pole */}
-              <div className="w-px h-20" style={{ background: isDark ? "rgba(120,120,140,0.65)" : "rgba(249,115,22,0.5)" }} />
-
-              {/* Crossbar */}
-              <div className="absolute h-px w-14" style={{ top: 14, left: -28, background: isDark ? "rgba(120,120,140,0.5)" : "rgba(249,115,22,0.4)" }} />
-
-              {/* Drooping catenary wire */}
-              <svg className="absolute overflow-visible" style={{ left: 0, top: 14 }} width="113" height="22" fill="none">
-                <path d="M 0 0 Q 56.5 20 113 0" stroke={isDark ? "rgba(100,100,120,0.55)" : "rgba(249,115,22,0.45)"} strokeWidth="1" />
+              <div className="w-px h-20" style={{ background: isDark ? "rgba(100,100,120,0.65)" : "rgba(249,115,22,0.45)" }} />
+              <div className="absolute h-px w-14" style={{ top: 13, left: -28, background: isDark ? "rgba(100,100,120,0.5)" : "rgba(249,115,22,0.35)" }} />
+              <svg className="absolute overflow-visible" style={{ left: 0, top: 13 }} width="68" height="18" fill="none">
+                <path d="M 0 0 Q 34 15 68 0" stroke={isDark ? "rgba(85,85,110,0.5)" : "rgba(249,115,22,0.38)"} strokeWidth="0.8" />
               </svg>
-
-              {/* ── DARK MODE: glowing bulb at pole top ── */}
               {isDark && (
                 <>
-                  {/* Outer soft halo */}
-                  <motion.div
-                    animate={{ opacity: [0.5, 0.9, 0.5], scale: [1, 1.35, 1] }}
-                    transition={{ duration: 2.2, repeat: Infinity, delay: (i * 0.13) % 2, ease: "easeInOut" }}
-                    className="absolute rounded-full pointer-events-none"
-                    style={{
-                      width: 18, height: 18,
-                      top: -9, left: -9,
-                      background: "radial-gradient(circle, rgba(255,230,80,0.55) 0%, rgba(255,200,50,0) 100%)",
-                    }}
-                  />
-                  {/* Inner bright bulb */}
-                  <motion.div
-                    animate={{ opacity: [0.85, 1, 0.85] }}
-                    transition={{ duration: 2.2, repeat: Infinity, delay: (i * 0.13) % 2, ease: "easeInOut" }}
-                    className="absolute rounded-full pointer-events-none"
-                    style={{
-                      width: 5, height: 5,
-                      top: -2.5, left: -2.5,
-                      background: "#ffe566",
-                      boxShadow: "0 0 6px 3px rgba(255,220,60,0.8), 0 0 12px 5px rgba(255,200,40,0.4)",
-                    }}
-                  />
+                  <motion.div animate={{ opacity: [0.4, 0.8, 0.4], scale: [1, 1.28, 1] }}
+                    transition={{ duration: 2.4, repeat: Infinity, delay: (i * 0.19) % 2.4, ease: "easeInOut" }}
+                    className="absolute rounded-full"
+                    style={{ width: 16, height: 16, top: -8, left: -8,
+                      background: "radial-gradient(circle, rgba(255,225,70,0.48) 0%, transparent 100%)" }} />
+                  <motion.div animate={{ opacity: [0.78, 1, 0.78] }}
+                    transition={{ duration: 2.4, repeat: Infinity, delay: (i * 0.19) % 2.4, ease: "easeInOut" }}
+                    className="absolute rounded-full"
+                    style={{ width: 4, height: 4, top: -2, left: -2, background: "#ffe566",
+                      boxShadow: "0 0 5px 2px rgba(255,218,55,0.9), 0 0 12px 5px rgba(255,200,40,0.35)" }} />
                 </>
               )}
             </div>
           ))}
         </motion.div>
 
-        {/* Rails */}
-        <div className="absolute bottom-[34px] left-0 right-0 h-[3px]"
-          style={{ background: isDark ? "linear-gradient(to right, transparent, rgba(150,150,170,0.7), transparent)" : "linear-gradient(to right, transparent, rgba(251,146,60,0.7), transparent)" }} />
-        <div className="absolute bottom-[22px] left-0 right-0 h-[3px]"
-          style={{ background: isDark ? "linear-gradient(to right, transparent, rgba(150,150,170,0.7), transparent)" : "linear-gradient(to right, transparent, rgba(251,146,60,0.7), transparent)" }} />
-
-        {/* Scrolling track sleepers */}
-        <motion.div className="absolute bottom-[18px] flex gap-7 items-end"
-          animate={{ x: [0, -112] }} transition={{ duration: 1.4, repeat: Infinity, ease: "linear" }}>
-          {Array.from({ length: 32 }).map((_, i) => (
-            <div key={i} className="w-10 h-4 rounded-[2px] shrink-0"
-              style={{ background: isDark ? "rgba(60,55,70,0.8)" : "rgba(253,230,138,0.7)" }} />
+        {/* ── RAILS — SVG I-beam cross-section, full width ── */}
+        {/* Sleepers first (behind rails) — tile=68px */}
+        <motion.div className="absolute flex" style={{ bottom: "16px", gap: "28px" }}
+          animate={{ x: [0, -68] }}
+          transition={{ duration: 0.88, repeat: Infinity, ease: "linear", repeatDelay: 0 }}>
+          {Array.from({ length: 42 }).map((_, i) => (
+            <div key={i} className="shrink-0" style={{
+              width: 40, height: 16, borderRadius: 2,
+              background: isDark
+                ? "linear-gradient(to bottom, rgba(70,62,82,0.9), rgba(50,44,60,0.85))"
+                : "linear-gradient(to bottom, rgba(210,168,72,0.85), rgba(175,132,45,0.7))",
+            }} />
           ))}
         </motion.div>
+        {/* Rail SVG — near rail (bottom) + far rail (top), I-beam shape */}
+        <svg className="absolute left-0 w-full" style={{ bottom: 28, pointerEvents: "none" }} height="22"
+          viewBox="0 0 100 22" preserveAspectRatio="none">
+          {/* Far rail (top of track) */}
+          <rect x="0" y="0" width="100" height="1" fill={isDark ? "rgba(210,215,230,0.55)" : "rgba(255,200,140,0.6)"} /> {/* shine */}
+          <rect x="0" y="1" width="100" height="3.5" fill={isDark ? "rgba(160,165,185,0.85)" : "rgba(200,130,60,0.85)"} /> {/* head */}
+          <rect x="0" y="4.5" width="100" height="1.5" fill={isDark ? "rgba(100,105,125,0.7)" : "rgba(150,90,30,0.7)"} /> {/* web */}
+          <rect x="0" y="6" width="100" height="2.5" fill={isDark ? "rgba(140,145,165,0.75)" : "rgba(175,110,40,0.75)"} /> {/* base */}
+          {/* Near rail (bottom of track) */}
+          <rect x="0" y="12" width="100" height="1" fill={isDark ? "rgba(220,225,245,0.6)" : "rgba(255,210,160,0.65)"} /> {/* shine */}
+          <rect x="0" y="13" width="100" height="4" fill={isDark ? "rgba(175,180,200,0.9)" : "rgba(210,140,65,0.9)"} /> {/* head */}
+          <rect x="0" y="17" width="100" height="2" fill={isDark ? "rgba(110,115,135,0.75)" : "rgba(160,100,35,0.75)"} /> {/* web */}
+          <rect x="0" y="19" width="100" height="3" fill={isDark ? "rgba(155,160,180,0.8)" : "rgba(185,118,45,0.8)"} /> {/* base */}
+        </svg>
 
-        {/* ── THE TRAIN ── */}
-        <motion.div className="absolute bottom-[9px]"
-          animate={{ x: ["-420px", "110vw"] }}
-          transition={{ duration: 18, repeat: Infinity, ease: "linear" }}>
-          {/* Smoke puffs from chimney */}
-          {[0, 0.45, 0.9, 1.35].map((delay, i) => (
-            <motion.div key={i}
-              className="absolute rounded-full"
-              style={{
-                width: 22 + i * 10, height: 22 + i * 10,
-                left: 30 - i * 3, bottom: 88,
-                background: isDark
-                  ? `radial-gradient(circle, rgba(80,80,100,${0.7 - i * 0.1}), rgba(60,60,80,0.15))`
-                  : `radial-gradient(circle, rgba(180,180,190,${0.75 - i * 0.1}), rgba(200,200,210,0.2))`,
-                filter: "blur(2px)",
-              }}
-              animate={{ opacity: [0.85, 0], y: [0, -55 - i * 14], x: [-3 - i * 6, -16 - i * 12], scale: [0.5, 2.2] }}
-              transition={{ duration: 1.7, repeat: Infinity, delay, ease: "easeOut" }} />
-          ))}
+        {/* ── TRAIN — single continuous loop; both endpoints far off-screen so the instant reset is invisible ── */}
+        {[0].map((delaySec) => (
+          <motion.div key={delaySec}
+            className="absolute bottom-[9px]"
+            style={{ left: 0, willChange: "transform" }}
+            initial={{ x: -510 }}
+            animate={{ x: [-510, vw] }}
+            transition={{ duration: 18, repeat: Infinity, ease: "linear", repeatDelay: 0, delay: delaySec }}>
 
-          {/* Train SVG — windows glow warm yellow at night */}
-          <svg width="360" height="80" viewBox="0 0 260 58" fill="none">
-            <rect x="10" y="8" width="210" height="32" rx="6" fill={isDark ? "#c2410c" : "#f97316"} />
-            <rect x="10" y="30" width="210" height="6" rx="0" fill={isDark ? "#9a3412" : "#ea580c"} />
-            {/* Carriage windows — warm amber glow at night */}
-            {[28, 58, 88, 118, 148].map((x) => (
-              <g key={x}>
-                <rect x={x} y={14} width={20} height={14} rx="3" fill={isDark ? "#fde68a" : "white"} opacity={isDark ? 0.95 : 0.92} />
-                {isDark && (
-                  <rect x={x} y={14} width={20} height={14} rx="3"
-                    fill="none" stroke="rgba(251,191,36,0.6)" strokeWidth="1.5"
-                    filter="url(#win-glow)" />
-                )}
-              </g>
+            {/* Smoke — 12 rapid puffs, staggered, all from same chimney point */}
+            {[
+              { d: 0.00, s: 22 }, { d: 0.18, s: 28 }, { d: 0.36, s: 20 },
+              { d: 0.54, s: 32 }, { d: 0.72, s: 24 }, { d: 0.90, s: 30 },
+              { d: 1.08, s: 21 }, { d: 1.26, s: 34 }, { d: 1.44, s: 26 },
+              { d: 1.62, s: 19 }, { d: 1.80, s: 29 }, { d: 1.98, s: 23 },
+            ].map(({ d, s }, i) => (
+              <motion.div key={i} className="absolute rounded-full"
+                style={{
+                  width: s, height: s,
+                  left: 46,
+                  bottom: 78,
+                  background: isDark
+                    ? `radial-gradient(circle, rgba(155,158,165,0.80) 0%, rgba(120,125,135,0.04) 100%)`
+                    : `radial-gradient(circle, rgba(155,155,165,0.72) 0%, rgba(190,190,200,0.04) 100%)`,
+                  filter: `blur(${2.5 + s * 0.06}px)`,
+                  translateX: "-50%",
+                }}
+                animate={{
+                  opacity: [0, 0.88, 0.5, 0],
+                  y: [0, -22, -44, -68],
+                  x: [0, -5, -12, -20],
+                  scale: [0.28, 0.85, 1.25, 1.65],
+                }}
+                transition={{ duration: 2.16, repeat: Infinity, delay: d, ease: "easeOut", repeatDelay: 0 }} />
             ))}
-            {isDark && (
+
+            {/* Train SVG — locomotive + 4 carriages */}
+            <svg width="300" height="80" viewBox="0 0 222 58" fill="none">
               <defs>
-                <filter id="win-glow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="2.5" result="blur" />
-                  <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-                </filter>
-              </defs>
-            )}
-            <rect x="198" y="4" width="50" height="36" rx="6" fill={isDark ? "#7c2d12" : "#c2410c"} />
-            <rect x="204" y="10" width="36" height="18" rx="3" fill={isDark ? "#fde68a" : "white"} opacity={isDark ? 0.95 : 0.92} />
-            <rect x="244" y="14" width="12" height="10" rx="3" fill={isDark ? "#7c2d12" : "#9a3412"} />
-            <rect x="26" y="0" width="10" height="11" rx="2" fill={isDark ? "#431407" : "#7c2d12"} />
-            <rect x="0" y="28" width="14" height="4" rx="2" fill={isDark ? "#7c2d12" : "#9a3412"} />
-            {/* Headlight beam in dark mode */}
-            {isDark && (
-              <>
-                <defs>
-                  <radialGradient id="headlight" cx="0%" cy="50%" r="100%">
-                    <stop offset="0%" stopColor="rgba(255,255,220,0.9)" />
+                {isDark && (
+                  <filter id="win-glow2" x="-60%" y="-60%" width="220%" height="220%">
+                    <feGaussianBlur stdDeviation="2.5" result="blur" />
+                    <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                  </filter>
+                )}
+                {isDark && (
+                  <radialGradient id="hl2" cx="0%" cy="50%" r="100%">
+                    <stop offset="0%" stopColor="rgba(255,255,215,0.95)" />
                     <stop offset="100%" stopColor="rgba(255,255,200,0)" />
                   </radialGradient>
-                </defs>
-                <ellipse cx="-12" cy="36" rx="14" ry="6" fill="url(#headlight)" opacity="0.7" />
-                <circle cx="0" cy="36" r="3" fill="#fffde0" opacity="0.95" />
-              </>
-            )}
-          </svg>
+                )}
+              </defs>
 
-        </motion.div>
+              {/* ── Locomotive (left/front) ── */}
+              <rect x="0" y="28" width="16" height="4" rx="2" fill={isDark ? "#7c2d12" : "#9a3412"} /> {/* buffer */}
+              <rect x="14" y="6" width="52" height="34" rx="5" fill={isDark ? "#7c2d12" : "#c2410c"} />  {/* loco body */}
+              <rect x="18" y="12" width="34" height="18" rx="3" fill={isDark ? "#fde68a" : "white"} opacity={isDark ? 0.95 : 0.9} /> {/* cab window */}
+              {isDark && <rect x="18" y="12" width="34" height="18" rx="3" fill="none" stroke="rgba(251,191,36,0.6)" strokeWidth="1.5" filter="url(#win-glow2)" />}
+              <rect x="30" y="0" width="9" height="9" rx="2" fill={isDark ? "#431407" : "#7c2d12"} />   {/* chimney */}
+              <rect x="14" y="36" width="52" height="4" fill={isDark ? "#6b1c0a" : "#b45309"} />         {/* chassis stripe */}
+              {/* Headlight */}
+              {isDark
+                ? <><ellipse cx="2" cy="35" rx="13" ry="5" fill="url(#hl2)" opacity="0.75" /><circle cx="14" cy="35" r="3" fill="#fffde0" opacity="0.98" /></>
+                : <circle cx="14" cy="35" r="3" fill="#fef3c7" opacity="0.8" />}
+
+              {/* Coupler 1 */}
+              <rect x="66" y="26" width="6" height="6" rx="1" fill={isDark ? "rgba(90,80,100,0.8)" : "rgba(120,80,30,0.7)"} />
+
+              {/* ── Carriage 1 ── x=72 w=72 */}
+              <rect x="72" y="10" width="72" height="30" rx="4" fill={isDark ? "#c2410c" : "#f97316"} />
+              <rect x="72" y="34" width="72" height="5" fill={isDark ? "#9a3412" : "#ea580c"} />
+              {[84, 116].map(wx => (
+                <g key={wx}>
+                  <rect x={wx} y="17" width="18" height="13" rx="2.5" fill={isDark ? "#fde68a" : "white"} opacity={isDark ? 0.95 : 0.92} />
+                  {isDark && <rect x={wx} y="17" width="18" height="13" rx="2.5" fill="none" stroke="rgba(251,191,36,0.55)" strokeWidth="1.2" filter="url(#win-glow2)" />}
+                </g>
+              ))}
+
+              {/* Coupler 2 */}
+              <rect x="144" y="26" width="6" height="6" rx="1" fill={isDark ? "rgba(90,80,100,0.8)" : "rgba(120,80,30,0.7)"} />
+
+              {/* ── Carriage 2 ── x=150 w=72 */}
+              <rect x="150" y="10" width="72" height="30" rx="4" fill={isDark ? "#c2410c" : "#f97316"} />
+              <rect x="150" y="34" width="72" height="5" fill={isDark ? "#9a3412" : "#ea580c"} />
+              {[162, 194].map(wx => (
+                <g key={wx}>
+                  <rect x={wx} y="17" width="18" height="13" rx="2.5" fill={isDark ? "#fde68a" : "white"} opacity={isDark ? 0.95 : 0.92} />
+                  {isDark && <rect x={wx} y="17" width="18" height="13" rx="2.5" fill="none" stroke="rgba(251,191,36,0.55)" strokeWidth="1.2" filter="url(#win-glow2)" />}
+                </g>
+              ))}
+
+              {/* Rear buffer */}
+              <rect x="222" y="28" width="0" height="4" rx="1" fill={isDark ? "#7c2d12" : "#9a3412"} />
+            </svg>
+          </motion.div>
+        ))}
       </div>
     </section>
   );

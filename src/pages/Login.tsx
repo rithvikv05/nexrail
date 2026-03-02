@@ -105,7 +105,7 @@ const Login = () => {
       if (rpcErr || !data) {
         setError("No account found with that email address.");
       } else {
-        setSuccessMsg("Password updated! You can now sign in.");
+        setSuccessMsg("Password updated! You can now log in.");
         setTimeout(() => {
           setMode("login");
           setSuccessMsg("");
@@ -123,7 +123,7 @@ const Login = () => {
     <div className="min-h-screen grid lg:grid-cols-2 overflow-hidden bg-background">
 
       {/* ── LEFT PANEL ── */}
-      <div className="relative hidden lg:flex flex-col justify-between p-14 overflow-hidden bg-background">
+      <div className="relative hidden lg:flex flex-col justify-start gap-10 p-14 overflow-hidden bg-background">
         {/* Dot grid */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0"
@@ -172,30 +172,15 @@ const Login = () => {
           </div>
         </div>
 
-        {/* Bottom: mini train diorama */}
-        <div className="relative z-10 h-16 overflow-hidden">
-          <div className="absolute bottom-4 left-0 right-0 h-px bg-primary/30" />
-          <div className="absolute bottom-2 left-0 right-0 h-px bg-primary/20" />
-          <motion.div animate={{ x: ["-30%", "120%"] }} transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
-            className="absolute bottom-2">
-            <svg width="140" height="30" viewBox="0 0 140 30" fill="none">
-              <rect x="5" y="4" width="110" height="18" rx="4" fill="#f97316" />
-              <rect x="5" y="16" width="110" height="4" rx="0" fill="#ea580c" />
-              {[14, 34, 54, 74].map(x => <rect key={x} x={x} y={7} width={13} height={9} rx="2" fill="white" opacity="0.9" />)}
-              <rect x="105" y="2" width="28" height="20" rx="4" fill="#c2410c" />
-              <rect x="108" y="5" width="20" height="11" rx="2" fill="white" opacity="0.9" />
-            </svg>
-          </motion.div>
-        </div>
       </div>
 
       {/* ── RIGHT PANEL (Form) ── */}
-      <div className="relative flex items-center justify-center p-6 lg:p-14 bg-background">
+      <div className="relative flex items-start justify-center p-6 pt-16 lg:p-14 lg:pt-20 bg-background">
         {/* Subtle dot grid on right too */}
         <div className="absolute inset-0 pointer-events-none"
           style={{ backgroundImage: "radial-gradient(circle, rgba(249,115,22,0.04) 1px, transparent 1px)", backgroundSize: "32px 32px" }} />
 
-        <div className="w-full max-w-md space-y-7 relative z-10">
+        <div className="w-full max-w-md space-y-4 relative z-10">
           {/* Mobile logo */}
           <Link to="/" className="lg:hidden inline-flex items-center gap-2 mb-6">
             <div className="h-9 w-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center">
@@ -208,7 +193,7 @@ const Login = () => {
           {returnTo === "/book" && (
             <div className="p-3 bg-orange-50 border border-orange-200 rounded-xl text-orange-700 text-xs font-mono flex items-start gap-2">
               <span className="mt-0.5">🔒</span>
-              <span>You need to log in to book a ticket. Sign in below and you'll be taken straight to payment.</span>
+              <span>You need to log in to book a ticket. Log in below and you'll be taken straight to payment.</span>
             </div>
           )}
 
@@ -218,7 +203,7 @@ const Login = () => {
               {mode === "login" ? "Welcome back" : "Create account"}
             </p>
             <h2 className="text-3xl font-black text-foreground font-mono">
-              {mode === "login" ? "SIGN IN" : "SIGN UP"}
+              {mode === "login" ? "LOG IN" : "SIGN UP"}
             </h2>
           </motion.div>
 
@@ -251,7 +236,7 @@ const Login = () => {
               <div>
                 <button type="button" onClick={() => { setMode("login"); setError(""); setSuccessMsg(""); }}
                   className="text-xs text-muted-foreground font-mono hover:text-foreground transition-colors flex items-center gap-1 mb-4">
-                  ← Back to sign in
+                  ← Back to log in
                 </button>
                 <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-1">Reset password</p>
                 <h2 className="text-3xl font-black text-foreground font-mono">FORGOT?</h2>
@@ -359,7 +344,7 @@ const Login = () => {
             <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
               type="submit" disabled={loading}
               className="w-full py-4 bg-primary hover:bg-primary/90 text-primary-foreground font-black rounded-xl flex items-center justify-center gap-2 disabled:opacity-40 font-mono tracking-widest uppercase text-sm transition-all">
-              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>{mode === "login" ? "Sign In" : "Create Account"} <ArrowRight className="h-4 w-4" /></>}
+              {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>{mode === "login" ? "Log In" : "Create Account"} <ArrowRight className="h-4 w-4" /></>}
             </motion.button>
           </form>
 
