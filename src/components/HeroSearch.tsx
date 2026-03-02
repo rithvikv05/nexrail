@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 // Maps to public.class table (class_code, class_name)
 const CLASS_OPTIONS = [
@@ -46,6 +47,8 @@ const HeroSearch = () => {
   const fromRef = useRef<HTMLDivElement>(null);
   const toRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -208,7 +211,7 @@ const HeroSearch = () => {
           style={{ backgroundImage: "radial-gradient(circle, rgba(249,115,22,0.08) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
       </div>
 
-      <div className="container mx-auto px-4 pt-44 pb-8 relative z-10 flex-1 flex flex-col">
+      <div className="container mx-auto px-4 pt-24 lg:pt-44 pb-8 relative z-10 flex-1 flex flex-col">
         <div className="flex flex-col lg:flex-row items-start justify-center gap-10 lg:gap-36">
 
           {/* ── LEFT: stencil heading ── */}
@@ -221,7 +224,7 @@ const HeroSearch = () => {
                   className="h-3 w-3 rounded-full bg-primary shadow-lg shadow-primary/40" />
               ))}
               <div className="flex-1 h-px bg-primary/15" />
-              <span className="text-primary/40 text-xs font-mono uppercase tracking-widest">INDIAN RAILWAYS · NEXRAIL</span>
+              <span className="text-primary/40 text-xs font-mono uppercase tracking-widest hidden sm:inline">INDIAN RAILWAYS · NEXRAIL</span>
               <div className="flex-1 h-px bg-primary/15" />
               {[0.45, 0.6, 0.75].map((d, i) => (
                 <motion.div key={i} animate={{ opacity: [1, 0.2, 1] }}
@@ -256,7 +259,7 @@ const HeroSearch = () => {
           {/* ── RIGHT: Search card ── */}
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, type: "spring", bounce: 0.2 }}
-            className="w-full max-w-md xl:max-w-lg shrink-0">
+            className="w-full max-w-md xl:max-w-lg shrink-0 mx-auto lg:mx-0">
             <div className="border border-border rounded-2xl bg-card shadow-sm overflow-hidden">
               {/* Card header */}
               <div className="px-6 pt-5 pb-3 border-b border-border">
@@ -333,12 +336,17 @@ const HeroSearch = () => {
 
       {/* ════════════ ANIMATED TRAIN DIORAMA ════════════ */}
       <div className="relative w-full h-56 overflow-hidden pointer-events-none select-none" style={{ zIndex: 5 }}>
-        {/* Sky fade */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-orange-50/40 to-orange-100/70" />
+        {/* Sky fade — night in dark mode */}
+        <div className={`absolute inset-0 transition-colors duration-700 ${
+          isDark
+            ? "bg-gradient-to-b from-slate-900/80 via-slate-800/60 to-slate-900/80"
+            : "bg-gradient-to-b from-transparent via-orange-50/40 to-orange-100/70"
+        }`} />
 
         {/* Horizon hill silhouette */}
         <svg className="absolute bottom-20 left-0 w-full" height="60" viewBox="0 0 1440 60" preserveAspectRatio="none">
-          <path d="M0,60 Q180,10 360,38 Q540,65 720,22 Q900,0 1080,30 Q1260,58 1440,18 L1440,60 Z" fill="rgba(249,115,22,0.07)" />
+          <path d="M0,60 Q180,10 360,38 Q540,65 720,22 Q900,0 1080,30 Q1260,58 1440,18 L1440,60 Z"
+            fill={isDark ? "rgba(15,20,40,0.7)" : "rgba(249,115,22,0.07)"} />
         </svg>
 
         {/* Scrolling telegraph poles + catenary wires */}
@@ -346,27 +354,81 @@ const HeroSearch = () => {
           animate={{ x: [0, -224] }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }}>
           {Array.from({ length: 18 }).map((_, i) => (
             <div key={i} className="relative shrink-0" style={{ width: 1 }}>
+
+              {/* ── DARK MODE: spotlight cone ── */}
+              {isDark && (
+                <svg
+                  className="absolute overflow-visible pointer-events-none"
+                  style={{ top: 0, left: 0 }}
+                  width="0" height="0"
+                >
+                  <defs>
+                    <linearGradient id={`cone-${i}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="rgba(255,228,100,0.28)" />
+                      <stop offset="80%" stopColor="rgba(255,228,100,0.06)" />
+                      <stop offset="100%" stopColor="rgba(255,228,100,0)" />
+                    </linearGradient>
+                  </defs>
+                  {/* cone fans from top of pole downward ~130px to ground */}
+                  <polygon points="0,0 -44,130 44,130" fill={`url(#cone-${i})`} />
+                </svg>
+              )}
+
               {/* Vertical pole */}
-              <div className="w-px h-20 bg-orange-300/50" />
+              <div className="w-px h-20" style={{ background: isDark ? "rgba(120,120,140,0.65)" : "rgba(249,115,22,0.5)" }} />
+
               {/* Crossbar */}
-              <div className="absolute w-14 h-px bg-orange-300/40" style={{ top: 14, left: -28 }} />
-              {/* Drooping catenary wire to next pole (gap-28 = 112px + 1px pole = 113px) */}
+              <div className="absolute h-px w-14" style={{ top: 14, left: -28, background: isDark ? "rgba(120,120,140,0.5)" : "rgba(249,115,22,0.4)" }} />
+
+              {/* Drooping catenary wire */}
               <svg className="absolute overflow-visible" style={{ left: 0, top: 14 }} width="113" height="22" fill="none">
-                <path d="M 0 0 Q 56.5 20 113 0" stroke="rgba(249,115,22,0.45)" strokeWidth="1" />
+                <path d="M 0 0 Q 56.5 20 113 0" stroke={isDark ? "rgba(100,100,120,0.55)" : "rgba(249,115,22,0.45)"} strokeWidth="1" />
               </svg>
+
+              {/* ── DARK MODE: glowing bulb at pole top ── */}
+              {isDark && (
+                <>
+                  {/* Outer soft halo */}
+                  <motion.div
+                    animate={{ opacity: [0.5, 0.9, 0.5], scale: [1, 1.35, 1] }}
+                    transition={{ duration: 2.2, repeat: Infinity, delay: (i * 0.13) % 2, ease: "easeInOut" }}
+                    className="absolute rounded-full pointer-events-none"
+                    style={{
+                      width: 18, height: 18,
+                      top: -9, left: -9,
+                      background: "radial-gradient(circle, rgba(255,230,80,0.55) 0%, rgba(255,200,50,0) 100%)",
+                    }}
+                  />
+                  {/* Inner bright bulb */}
+                  <motion.div
+                    animate={{ opacity: [0.85, 1, 0.85] }}
+                    transition={{ duration: 2.2, repeat: Infinity, delay: (i * 0.13) % 2, ease: "easeInOut" }}
+                    className="absolute rounded-full pointer-events-none"
+                    style={{
+                      width: 5, height: 5,
+                      top: -2.5, left: -2.5,
+                      background: "#ffe566",
+                      boxShadow: "0 0 6px 3px rgba(255,220,60,0.8), 0 0 12px 5px rgba(255,200,40,0.4)",
+                    }}
+                  />
+                </>
+              )}
             </div>
           ))}
         </motion.div>
 
         {/* Rails */}
-        <div className="absolute bottom-[34px] left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-orange-400/70 to-transparent" />
-        <div className="absolute bottom-[22px] left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-orange-400/70 to-transparent" />
+        <div className="absolute bottom-[34px] left-0 right-0 h-[3px]"
+          style={{ background: isDark ? "linear-gradient(to right, transparent, rgba(150,150,170,0.7), transparent)" : "linear-gradient(to right, transparent, rgba(251,146,60,0.7), transparent)" }} />
+        <div className="absolute bottom-[22px] left-0 right-0 h-[3px]"
+          style={{ background: isDark ? "linear-gradient(to right, transparent, rgba(150,150,170,0.7), transparent)" : "linear-gradient(to right, transparent, rgba(251,146,60,0.7), transparent)" }} />
 
         {/* Scrolling track sleepers */}
         <motion.div className="absolute bottom-[18px] flex gap-7 items-end"
           animate={{ x: [0, -112] }} transition={{ duration: 1.4, repeat: Infinity, ease: "linear" }}>
           {Array.from({ length: 32 }).map((_, i) => (
-            <div key={i} className="w-10 h-4 rounded-[2px] shrink-0 bg-orange-200/70" />
+            <div key={i} className="w-10 h-4 rounded-[2px] shrink-0"
+              style={{ background: isDark ? "rgba(60,55,70,0.8)" : "rgba(253,230,138,0.7)" }} />
           ))}
         </motion.div>
 
@@ -381,25 +443,56 @@ const HeroSearch = () => {
               style={{
                 width: 22 + i * 10, height: 22 + i * 10,
                 left: 30 - i * 3, bottom: 88,
-                background: `radial-gradient(circle, rgba(180,180,190,${0.75 - i * 0.1}), rgba(200,200,210,0.2))`,
+                background: isDark
+                  ? `radial-gradient(circle, rgba(80,80,100,${0.7 - i * 0.1}), rgba(60,60,80,0.15))`
+                  : `radial-gradient(circle, rgba(180,180,190,${0.75 - i * 0.1}), rgba(200,200,210,0.2))`,
                 filter: "blur(2px)",
               }}
               animate={{ opacity: [0.85, 0], y: [0, -55 - i * 14], x: [-3 - i * 6, -16 - i * 12], scale: [0.5, 2.2] }}
               transition={{ duration: 1.7, repeat: Infinity, delay, ease: "easeOut" }} />
           ))}
 
-          {/* Train SVG */}
+          {/* Train SVG — windows glow warm yellow at night */}
           <svg width="360" height="80" viewBox="0 0 260 58" fill="none">
-            <rect x="10" y="8" width="210" height="32" rx="6" fill="#f97316" />
-            <rect x="10" y="30" width="210" height="6" rx="0" fill="#ea580c" />
+            <rect x="10" y="8" width="210" height="32" rx="6" fill={isDark ? "#c2410c" : "#f97316"} />
+            <rect x="10" y="30" width="210" height="6" rx="0" fill={isDark ? "#9a3412" : "#ea580c"} />
+            {/* Carriage windows — warm amber glow at night */}
             {[28, 58, 88, 118, 148].map((x) => (
-              <rect key={x} x={x} y={14} width={20} height={14} rx="3" fill="white" opacity="0.92" />
+              <g key={x}>
+                <rect x={x} y={14} width={20} height={14} rx="3" fill={isDark ? "#fde68a" : "white"} opacity={isDark ? 0.95 : 0.92} />
+                {isDark && (
+                  <rect x={x} y={14} width={20} height={14} rx="3"
+                    fill="none" stroke="rgba(251,191,36,0.6)" strokeWidth="1.5"
+                    filter="url(#win-glow)" />
+                )}
+              </g>
             ))}
-            <rect x="198" y="4" width="50" height="36" rx="6" fill="#c2410c" />
-            <rect x="204" y="10" width="36" height="18" rx="3" fill="white" opacity="0.92" />
-            <rect x="244" y="14" width="12" height="10" rx="3" fill="#9a3412" />
-            <rect x="26" y="0" width="10" height="11" rx="2" fill="#7c2d12" />
-            <rect x="0" y="28" width="14" height="4" rx="2" fill="#9a3412" />
+            {isDark && (
+              <defs>
+                <filter id="win-glow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="2.5" result="blur" />
+                  <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                </filter>
+              </defs>
+            )}
+            <rect x="198" y="4" width="50" height="36" rx="6" fill={isDark ? "#7c2d12" : "#c2410c"} />
+            <rect x="204" y="10" width="36" height="18" rx="3" fill={isDark ? "#fde68a" : "white"} opacity={isDark ? 0.95 : 0.92} />
+            <rect x="244" y="14" width="12" height="10" rx="3" fill={isDark ? "#7c2d12" : "#9a3412"} />
+            <rect x="26" y="0" width="10" height="11" rx="2" fill={isDark ? "#431407" : "#7c2d12"} />
+            <rect x="0" y="28" width="14" height="4" rx="2" fill={isDark ? "#7c2d12" : "#9a3412"} />
+            {/* Headlight beam in dark mode */}
+            {isDark && (
+              <>
+                <defs>
+                  <radialGradient id="headlight" cx="0%" cy="50%" r="100%">
+                    <stop offset="0%" stopColor="rgba(255,255,220,0.9)" />
+                    <stop offset="100%" stopColor="rgba(255,255,200,0)" />
+                  </radialGradient>
+                </defs>
+                <ellipse cx="-12" cy="36" rx="14" ry="6" fill="url(#headlight)" opacity="0.7" />
+                <circle cx="0" cy="36" r="3" fill="#fffde0" opacity="0.95" />
+              </>
+            )}
           </svg>
 
         </motion.div>

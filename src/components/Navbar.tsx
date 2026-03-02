@@ -43,7 +43,7 @@ const Navbar = () => {
           : "bg-background/80 backdrop-blur-md border-b border-border py-3"
       }`}
     >
-      <div className="container mx-auto flex items-center justify-between px-6">
+      <div className="container mx-auto flex items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2 group flex-1">
           <div className="h-10 w-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center">
             <Train className="h-6 w-6" />

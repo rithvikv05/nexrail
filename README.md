@@ -130,7 +130,7 @@ Full function definitions → [`database/functions.sql`](database/functions.sql)
 | `/trains` | Search Results | `check_seat_availability` |
 | `/book` | Booking Flow | `get_fare`, `create_reservation`, `add_passenger`, `make_payment`, `confirm_booking`, `update_seat_availability` |
 | `/pnr-status` | PNR Status | `get_pnr_details` |
-| `/live-train` | Live Train Tracker | `get_train_schedule` |
+| `/train-schedule` | Train Schedule | `get_train_schedule` |
 | `/train-schedule` | Timetable | `get_train_schedule` |
 | `/profile` | User Profile | `get_user_profile`, `fetch_user_reservations`, `update_user_profile`, `change_password`, `delete_user` |
 | `/login` | Auth | `check_email_exists`, `register_user`, `login_user` |

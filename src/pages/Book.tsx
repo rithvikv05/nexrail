@@ -247,7 +247,7 @@ const Book = () => {
                 className="h-2.5 w-2.5 rounded-full bg-primary shadow-lg shadow-primary/40" />
             ))}
             <div className="flex-1 h-px bg-primary/15" />
-            <span className="text-primary/40 text-xs font-mono uppercase tracking-widest">NEXRAIL · BOOKING</span>
+            <span className="text-primary/40 text-xs font-mono uppercase tracking-widest hidden sm:inline">NEXRAIL · BOOKING</span>
             <div className="flex-1 h-px bg-primary/15" />
           </div>
           <div className="flex items-end justify-between gap-4">

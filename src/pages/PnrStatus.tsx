@@ -273,13 +273,13 @@ const PnrStatus = () => {
                     <div className="bg-white rounded-3xl overflow-hidden shadow-2xl shadow-orange-300/50 border border-orange-100">
 
                       {/* Orange header band */}
-                      <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-rose-500 px-8 py-7 relative overflow-hidden">
+                      <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-rose-500 px-5 sm:px-8 py-5 sm:py-7 relative overflow-hidden">
                         <div className="absolute right-[-30px] top-[-30px] w-36 h-36 rounded-full bg-white/10" />
                         <div className="absolute right-12 top-[-8px] w-16 h-16 rounded-full bg-white/[0.07]" />
                         <div className="flex items-start justify-between relative z-10">
                           <div>
                             <p className="text-orange-100 text-xs font-bold uppercase tracking-widest mb-1">NexRail — Booking Confirmation</p>
-                            <p className="text-white text-4xl font-black">{journey.train_name || `Train #${journey.train_id}`}</p>
+                            <p className="text-white text-2xl sm:text-4xl font-black">{journey.train_name || `Train #${journey.train_id}`}</p>
                           </div>
                           {/* Rubber stamp */}
                           <div className={`h-20 w-20 rounded-full border-[3px] ${stampColor} bg-white flex flex-col items-center justify-center rotate-[12deg] shadow-lg shrink-0`}>
@@ -305,7 +305,7 @@ const PnrStatus = () => {
                       </div>
 
                       {/* Ticket meta row */}
-                      <div className="bg-[#fffdf9] px-8 py-6 grid grid-cols-2 sm:grid-cols-4 gap-5">
+                      <div className="bg-[#fffdf9] px-5 sm:px-8 py-4 sm:py-6 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
                         {[
                           { label: "PNR", val: String(journey.pnr_no), mono: true },
                           { label: "Date", val: journey.from_date || "—" },
@@ -327,7 +327,7 @@ const PnrStatus = () => {
                       </div>
 
                       {/* Passenger section */}
-                      <div className="bg-[#fff7f0] px-8 py-6">
+                      <div className="bg-[#fff7f0] px-5 sm:px-8 py-5 sm:py-6">
                         <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
                           <User className="h-3 w-3" /> Passengers
                         </p>
@@ -355,7 +355,7 @@ const PnrStatus = () => {
                       </div>
 
                       {/* Payment dark strip */}
-                      <div className="bg-slate-800 px-8 py-5 flex items-center justify-between">
+                      <div className="bg-slate-800 px-5 sm:px-8 py-4 sm:py-5 flex items-center justify-between">
                         <div>
                           <p className="text-slate-400 text-xs uppercase font-bold tracking-widest">Total Paid</p>
                           <p className="text-white text-2xl font-black">₹{totalFare || "—"}</p>
@@ -368,7 +368,7 @@ const PnrStatus = () => {
                       </div>
 
                       {/* Barcode strip */}
-                      <div className="bg-white px-8 py-5 flex flex-col items-center gap-2">
+                      <div className="bg-white px-5 sm:px-8 py-4 sm:py-5 flex flex-col items-center gap-2">
                         <div className="flex gap-px h-10 overflow-hidden">
                           {[2,1,3,1,2,2,1,3,1,2,1,2,3,1,2,1,2,3,2,1,3,1,2,1,2,1,3,2,1,2,1,3,1,2,2,1,3,1,2,1].map((w, i) => (
                             <div key={i} className="bg-slate-800 shrink-0" style={{ width: `${w * 2}px` }} />

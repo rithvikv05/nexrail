@@ -127,7 +127,7 @@ const TrainSchedule = () => {
                 <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
                   onClick={handleSearch}
                   disabled={loading || !trainNo}
-                  className="px-8 py-4 bg-primary hover:bg-primary/90 text-primary-foreground font-black rounded-xl flex items-center gap-2 disabled:opacity-30 transition-all font-mono tracking-wide">
+                  className="px-4 sm:px-8 py-4 bg-primary hover:bg-primary/90 text-primary-foreground font-black rounded-xl flex items-center gap-2 disabled:opacity-30 transition-all font-mono tracking-wide">
                   {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Zap className="h-5 w-5" /> TRACK</>}
                 </motion.button>
               </div>
@@ -175,7 +175,7 @@ const TrainSchedule = () => {
                     {/* Origin/Destination strip */}
                     {first && last && (
                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                        className="mb-8 bg-primary/5 border border-primary/15 rounded-2xl px-6 py-5 flex items-center justify-between gap-4">
+                        className="mb-8 bg-primary/5 border border-primary/15 rounded-2xl px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div>
                           <p className="text-muted-foreground text-[10px] font-mono uppercase tracking-widest">ORIGIN</p>
                           <p className="text-foreground font-black text-xl font-mono">{first.station_name || first.via_station_code}</p>

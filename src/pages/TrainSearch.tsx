@@ -411,7 +411,7 @@ const TrainSearch = () => {
                               initial={{ opacity: 0, y: 8 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: 8 }}
-                              className="mt-5 flex items-center justify-between bg-card border border-primary/30 rounded-xl px-5 py-3">
+                              className="mt-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-card border border-primary/30 rounded-xl px-4 sm:px-5 py-3">
                               <div>
                                 <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">Selected</p>
                                 <p className="font-black font-mono text-foreground">

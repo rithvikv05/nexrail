@@ -218,7 +218,7 @@ const Profile = () => {
 
               {/* Personal Info Tab */}
               {activeTab === "Personal Info" && (
-                <div className="bg-card border rounded-3xl p-8 shadow-sm">
+                <div className="bg-card border rounded-3xl p-4 sm:p-8 shadow-sm">
                   <h3 className="text-lg font-bold mb-6">Personal Information</h3>
                   {msg && (
                     <div className={`mb-4 p-3 rounded-xl text-sm ${msg.startsWith("Error") ? "bg-red-500/10 text-red-500" : "bg-green-500/10 text-green-500"}`}>
@@ -269,7 +269,7 @@ const Profile = () => {
 
               {/* My Bookings Tab */}
               {activeTab === "My Bookings" && (
-                <div className="bg-card border rounded-3xl p-8 shadow-sm">
+                <div className="bg-card border rounded-3xl p-4 sm:p-8 shadow-sm">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-bold">My Bookings</h3>
                     <span className="text-sm text-muted-foreground">{bookings.length} booking(s)</span>
@@ -317,7 +317,7 @@ const Profile = () => {
                                 ) : (
                                   <div className="bg-[#fdfaf6] rounded-b-2xl overflow-hidden">
                                     {/* Ticket header */}
-                                    <div className="bg-gradient-to-br from-orange-600 to-orange-800 px-8 pt-8 pb-6 relative overflow-hidden">
+                                    <div className="bg-gradient-to-br from-orange-600 to-orange-800 px-4 sm:px-8 pt-6 sm:pt-8 pb-5 sm:pb-6 relative overflow-hidden">
                                       <div className="absolute inset-0 opacity-10"
                                         style={{ backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
                                       <div className="flex items-start justify-between relative z-10">
@@ -345,7 +345,7 @@ const Profile = () => {
                                     </div>
 
                                     {/* Meta row */}
-                                    <div className="px-8 py-5 grid grid-cols-2 sm:grid-cols-4 gap-4 bg-white border-b">
+                                    <div className="px-4 sm:px-8 py-4 sm:py-5 grid grid-cols-2 sm:grid-cols-4 gap-4 bg-white border-b">
                                       {[
                                         { label: "PNR", val: String(journey.pnr_no), mono: true },
                                         { label: "Date", val: journey.from_date || "—" },
@@ -360,7 +360,7 @@ const Profile = () => {
                                     </div>
 
                                     {/* Passenger rows */}
-                                    <div className="px-8 py-4 bg-white space-y-3">
+                                    <div className="px-4 sm:px-8 py-4 bg-white space-y-3">
                                       <p className="text-xs font-bold uppercase text-slate-400 tracking-widest mb-2">Passengers</p>
                                       {detail.map((r, i) => (
                                         <div key={i} className="flex items-center justify-between border rounded-xl px-4 py-3">
@@ -377,7 +377,7 @@ const Profile = () => {
                                     </div>
 
                                     {/* Payment strip */}
-                                    <div className="bg-slate-800 px-8 py-4 flex items-center justify-between rounded-b-2xl">
+                                    <div className="bg-slate-800 px-4 sm:px-8 py-4 flex items-center justify-between rounded-b-2xl">
                                       <div>
                                         <p className="text-slate-400 text-[10px] uppercase font-bold tracking-widest">Total Paid</p>
                                         <p className="text-white text-xl font-black">₹{journey.total_fare || "—"}</p>
@@ -402,7 +402,7 @@ const Profile = () => {
 
               {/* Settings Tab */}
               {activeTab === "Settings" && (
-                <div className="bg-card border rounded-3xl p-8 shadow-sm">
+                <div className="bg-card border rounded-3xl p-4 sm:p-8 shadow-sm">
                   <h3 className="text-lg font-bold mb-6">Change Password</h3>
                   {pwMsg && (
                     <div className={`mb-4 p-3 rounded-xl text-sm ${pwMsg.startsWith("Error") ? "bg-red-500/10 text-red-500" : "bg-green-500/10 text-green-500"}`}>
