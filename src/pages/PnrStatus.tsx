@@ -97,7 +97,7 @@ const PnrStatus = () => {
   const stampText = isConfirmed ? "CONFIRMED" : isCancelled ? "CANCELLED" : "WAITING";
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-background relative overflow-hidden">
       <Navbar />
 
       {/* Same dot grid as LiveTrain */}
@@ -108,7 +108,7 @@ const PnrStatus = () => {
           style={{ backgroundImage: "radial-gradient(circle, rgba(249,115,22,0.08) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
       </div>
 
-      <main className="container mx-auto px-4 pt-32 pb-24 relative z-10">
+      <main className="flex-1 min-h-screen container mx-auto px-4 pt-32 pb-24 relative z-10">
         <div className="max-w-2xl mx-auto">
 
           {/* Header — same LED blinker + stencil style as LiveTrain */}

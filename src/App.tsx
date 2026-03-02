@@ -4,10 +4,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import PnrStatus from "./pages/PnrStatus";
-import LiveTrain from "./pages/LiveTrain";
 import TrainSchedule from "./pages/TrainSchedule";
 import Profile from "./pages/Profile";
 import Book from "./pages/Book";
@@ -20,6 +20,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <ThemeProvider>
     <AuthProvider>
       <TooltipProvider>
         <Toaster />
@@ -30,7 +31,6 @@ const App = () => (
             <Route path="/trains" element={<TrainSearch />} />
             <Route path="/login" element={<Login />} />
             <Route path="/pnr-status" element={<PnrStatus />} />
-            <Route path="/live-train" element={<LiveTrain />} />
             <Route path="/train-schedule" element={<TrainSchedule />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/book" element={<Book />} />
@@ -41,6 +41,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

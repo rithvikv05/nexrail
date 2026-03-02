@@ -5,6 +5,7 @@ import { Clock, TrainFront, ArrowLeft, ChevronDown, ChevronUp, ArrowRight, Loade
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface TrainResult {
   train_no: string;
@@ -37,6 +38,7 @@ const buildBogies = () => {
 const TrainSearch = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const results: TrainResult[] = location.state?.results ?? [];
   const meta: SearchMeta | null = location.state?.meta ?? null;
 
@@ -68,6 +70,7 @@ const TrainSearch = () => {
     setDateLoading(false);
   };
   const [selectedBogie, setSelectedBogie] = useState<{ trainNo: string; bogieId: string; code: string; price: number } | null>(null);
+  const [authError, setAuthError] = useState("");
   // { trainNo: { classCode: seats } }
   const [seatAvail, setSeatAvail] = useState<Record<string, Record<string, number | null>>>({});
   const [availLoading, setAvailLoading] = useState<string | null>(null);
@@ -415,20 +418,44 @@ const TrainSearch = () => {
                                   {selectedBogie.code} Class &nbsp;·&nbsp; <span className="text-primary">₹{selectedBogie.price}</span>
                                 </p>
                               </div>
-                              <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
-                                onClick={() => navigate("/book", {
-                                  state: {
-                                    trainNo: parseInt(train.train_no),
-                                    trainName: train.train_name,
-                                    fromStation: meta?.from,
-                                    toStation: meta?.to,
-                                    date: currentDate || meta?.date,
-                                    classCode: selectedBogie.code,
-                                  }
-                                })}
-                                className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground font-black rounded-xl font-mono text-xs tracking-widest hover:bg-primary/90 transition-all">
-                                PROCEED <ArrowRight className="h-3.5 w-3.5" />
-                              </motion.button>
+                              <div className="flex flex-col items-end gap-1.5">
+                                {authError && (
+                                  <p className="text-[10px] font-mono text-red-500 text-right">{authError}</p>
+                                )}
+                                <motion.button whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+                                  onClick={() => {
+                                    if (!user) {
+                                      setAuthError("Please log in to book a ticket. Redirecting…");
+                                      setTimeout(() => navigate("/login", {
+                                        state: {
+                                          returnTo: "/book",
+                                          bookingState: {
+                                            trainNo: parseInt(train.train_no),
+                                            trainName: train.train_name,
+                                            fromStation: meta?.from,
+                                            toStation: meta?.to,
+                                            date: currentDate || meta?.date,
+                                            classCode: selectedBogie!.code,
+                                          },
+                                        },
+                                      }), 1200);
+                                      return;
+                                    }
+                                    navigate("/book", {
+                                      state: {
+                                        trainNo: parseInt(train.train_no),
+                                        trainName: train.train_name,
+                                        fromStation: meta?.from,
+                                        toStation: meta?.to,
+                                        date: currentDate || meta?.date,
+                                        classCode: selectedBogie!.code,
+                                      },
+                                    });
+                                  }}
+                                  className="flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground font-black rounded-xl font-mono text-xs tracking-widest hover:bg-primary/90 transition-all">
+                                  PROCEED <ArrowRight className="h-3.5 w-3.5" />
+                                </motion.button>
+                              </div>
                             </motion.div>
                           )}
                         </AnimatePresence>

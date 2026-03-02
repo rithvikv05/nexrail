@@ -14,6 +14,9 @@ const TABLES = [
     color: "#f97316",
     columns: [
       { name: "user_id",  type: "INTEGER",  pk: true,  fk: false, nullable: false, note: "nextval(seq)" },
+      { name: "fname",    type: "TEXT",     pk: false, fk: false, nullable: true,  note: "" },
+      { name: "lname",    type: "TEXT",     pk: false, fk: false, nullable: true,  note: "" },
+      { name: "uname",    type: "TEXT",     pk: false, fk: false, nullable: true,  note: "UNIQUE" },
       { name: "name",     type: "TEXT",     pk: false, fk: false, nullable: true,  note: "" },
       { name: "phone",    type: "TEXT",     pk: false, fk: false, nullable: true,  note: "" },
       { name: "age",      type: "INTEGER",  pk: false, fk: false, nullable: true,  note: "" },
@@ -142,7 +145,7 @@ const TABLES = [
       { name: "transaction_number",  type: "TEXT",    pk: true,  fk: false, nullable: false, note: "PK" },
       { name: "pnr_no",              type: "BIGINT",  pk: false, fk: true,  nullable: true,  note: "→ ticket_reservation" },
       { name: "user_id",             type: "INTEGER", pk: false, fk: true,  nullable: true,  note: "→ users" },
-      { name: "payment_date",        type: "DATE",    pk: false, fk: false, nullable: true,  note: "" },
+      { name: "payment_date",        type: "TIMESTAMPTZ", pk: false, fk: false, nullable: true,  note: "" },
       { name: "fare",                type: "NUMERIC", pk: false, fk: false, nullable: true,  note: "" },
       { name: "mode",                type: "TEXT",    pk: false, fk: false, nullable: true,  note: "UPI/Card/Cash" },
       { name: "confirmation_status", type: "TEXT",    pk: false, fk: false, nullable: true,  note: "" },
@@ -156,6 +159,21 @@ const TABLES = [
       { name: "userid",         type: "INTEGER", pk: false, fk: true, nullable: false, note: "→ users" },
       { name: "from_stationid", type: "TEXT",    pk: false, fk: true, nullable: false, note: "→ station" },
       { name: "to_stationid",   type: "TEXT",    pk: false, fk: true, nullable: false, note: "→ station" },
+    ],
+  },
+  {
+    name: "train_running_days",
+    description: "Days of the week each train runs",
+    color: "#7c3aed",
+    columns: [
+      { name: "train_id",  type: "INTEGER", pk: false, fk: true,  nullable: false, note: "→ train" },
+      { name: "monday",    type: "BOOLEAN", pk: false, fk: false, nullable: true,  note: "" },
+      { name: "tuesday",   type: "BOOLEAN", pk: false, fk: false, nullable: true,  note: "" },
+      { name: "wednesday", type: "BOOLEAN", pk: false, fk: false, nullable: true,  note: "" },
+      { name: "thursday",  type: "BOOLEAN", pk: false, fk: false, nullable: true,  note: "" },
+      { name: "friday",    type: "BOOLEAN", pk: false, fk: false, nullable: true,  note: "" },
+      { name: "saturday",  type: "BOOLEAN", pk: false, fk: false, nullable: true,  note: "" },
+      { name: "sunday",    type: "BOOLEAN", pk: false, fk: false, nullable: true,  note: "" },
     ],
   },
 ];
@@ -300,7 +318,7 @@ const FUNCTIONS = [
     name: "make_payment",
     type: "DML",
     description: "Inserts a payment record into payment_info and links it to the PNR",
-    params: ["trans_no TEXT", "pnr_number INTEGER", "user_code INTEGER", "pay_date DATE", "amount NUMERIC", "pay_mode TEXT"],
+    params: ["trans_no TEXT", "pnr_number INTEGER", "user_code INTEGER", "pay_date TIMESTAMPTZ", "amount NUMERIC", "pay_mode TEXT"],
     returns: "TABLE (pnr_no, transaction_number, confirmation_status)",
   },
   {
@@ -588,46 +606,266 @@ const PLAYGROUND_FUNCTIONS: PlayFn[] = [
     params: [{ key: "input_train_no", label: "Train Number", type: "number", placeholder: "12301" }] },
 ];
 
-// ─── ER Diagram ────────────────────────────────────────────────────────────────
+// ─── Interactive ER Diagram ────────────────────────────────────────────────────
 
-const ER_NODES = [
-  // Row 1
-  { id: "zone",              x: 20,  y: 30,  w: 110, label: "zone",              color: "#c2410c" },
-  { id: "users",             x: 200, y: 30,  w: 120, label: "users",             color: "#f97316" },
-  { id: "train",             x: 390, y: 30,  w: 120, label: "train",             color: "#ea580c" },
-  { id: "class",             x: 580, y: 30,  w: 110, label: "class",             color: "#b45309" },
-  // Row 2
-  { id: "station",           x: 20,  y: 190, w: 130, label: "station",           color: "#9a3412" },
-  { id: "train_route",       x: 280, y: 190, w: 135, label: "train_route",       color: "#c2410c" },
-  { id: "seat_availability", x: 480, y: 190, w: 155, label: "seat_availability", color: "#9a3412" },
-  // Row 3
-  { id: "search_history",    x: 20,  y: 350, w: 145, label: "search_history",    color: "#b45309" },
-  { id: "ticket_reservation",x: 220, y: 350, w: 165, label: "ticket_reservation",color: "#f97316" },
-  { id: "train_fare",        x: 450, y: 350, w: 130, label: "train_fare",        color: "#ea580c" },
-  // Row 4
-  { id: "passenger",         x: 120, y: 510, w: 130, label: "passenger",         color: "#c2410c" },
-  { id: "payment_info",      x: 320, y: 510, w: 135, label: "payment_info",      color: "#9a3412" },
+const ER_TABLE_COLOR: Record<string, string> = {
+  zone: "#c2410c", users: "#f97316", train: "#ea580c", class: "#b45309",
+  station: "#9a3412", train_route: "#c2410c", seat_availability: "#9a3412",
+  train_fare: "#ea580c", search_history: "#b45309", ticket_reservation: "#f97316",
+  passenger: "#c2410c", payment_info: "#9a3412",
+};
+
+const ER_RELATIONS = [
+  { from: "zone",               to: "station",             label: "HAS" },
+  { from: "station",            to: "train_route",         label: "APPEARS IN" },
+  { from: "train",              to: "train_route",         label: "HAS" },
+  { from: "train",              to: "seat_availability",   label: "HAS" },
+  { from: "class",              to: "train_fare",          label: "DETERMINES" },
+  { from: "users",              to: "ticket_reservation", label: "BOOKS" },
+  { from: "users",              to: "search_history",      label: "HAS" },
+  { from: "ticket_reservation", to: "passenger",           label: "CONTAINS" },
+  { from: "ticket_reservation", to: "payment_info",        label: "HAS" },
 ];
 
-const ER_EDGES = [
-  { from: "zone",              to: "station",           label: "1:N" },
-  { from: "users",             to: "search_history",    label: "1:N" },
-  { from: "users",             to: "ticket_reservation",label: "1:N" },
-  { from: "station",           to: "train",             label: "1:N" },
-  { from: "station",           to: "train_route",       label: "1:N" },
-  { from: "station",           to: "search_history",    label: "1:N" },
-  { from: "train",             to: "train_route",       label: "1:N" },
-  { from: "train",             to: "seat_availability", label: "1:N" },
-  { from: "train",             to: "ticket_reservation",label: "1:N" },
-  { from: "class",             to: "train_fare",        label: "1:N" },
-  { from: "ticket_reservation",to: "passenger",         label: "1:N" },
-  { from: "ticket_reservation",to: "payment_info",      label: "1:1" },
-];
+const ER_INIT: Record<string, { x: number; y: number }> = {
+  zone:               { x: 60,   y: 40   },
+  station:            { x: 330,  y: 40   },
+  train:              { x: 760,  y: 40   },
+  class:              { x: 60,   y: 340  },
+  seat_availability:  { x: 60,   y: 600  },
+  train_fare:         { x: 500,  y: 340  },
+  users:              { x: 60,   y: 900  },
+  search_history:     { x: 60,   y: 1180 },
+  passenger:          { x: 360,  y: 760  },
+  ticket_reservation: { x: 640,  y: 760  },
+  payment_info:       { x: 960,  y: 760  },
+};
 
-function nodeCenter(id: string) {
-  const n = ER_NODES.find(n => n.id === id)!;
-  return { x: n.x + n.w / 2, y: n.y + 22 };
+const ER_NODE_W = 210;
+const ER_ROW_H  = 22;
+const ER_HEAD_H = 38;
+const ER_PAD    = 10;
+
+function erNodeH(name: string) {
+  const t = TABLES.find(t => t.name === name);
+  return t ? ER_HEAD_H + t.columns.length * ER_ROW_H + ER_PAD : 60;
 }
+
+const ERDiagram = () => {
+  const [pos, setPos] = useState<Record<string, { x: number; y: number }>>(() => ({ ...ER_INIT }));
+  const [pan, setPan] = useState({ x: 40, y: 40 });
+  const [zoom, setZoom] = useState(0.55);
+  const [selected, setSelected] = useState<string | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const drag = useRef<
+    | { kind: "node"; id: string; ox: number; oy: number; mx0: number; my0: number }
+    | { kind: "pan";  px0: number; py0: number; mx0: number; my0: number }
+    | null
+  >(null);
+
+  const svgXY = (e: React.MouseEvent) => {
+    const r = svgRef.current!.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  };
+
+  const onNodeDown = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const { x, y } = svgXY(e);
+    drag.current = { kind: "node", id, ox: pos[id].x, oy: pos[id].y, mx0: x, my0: y };
+    setSelected(id);
+  };
+
+  const onBgDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    const { x, y } = svgXY(e);
+    drag.current = { kind: "pan", px0: pan.x, py0: pan.y, mx0: x, my0: y };
+    setSelected(null);
+  };
+
+  const onMove = (e: React.MouseEvent) => {
+    if (!drag.current) return;
+    const { x, y } = svgXY(e);
+    if (drag.current.kind === "node") {
+      const { id, ox, oy, mx0, my0 } = drag.current;
+      setPos(p => ({ ...p, [id]: { x: ox + (x - mx0) / zoom, y: oy + (y - my0) / zoom } }));
+    } else {
+      const { px0, py0, mx0, my0 } = drag.current;
+      setPan({ x: px0 + (x - mx0), y: py0 + (y - my0) });
+    }
+  };
+
+  const onUp = () => { drag.current = null; };
+
+  const onWheel = (e: React.WheelEvent<SVGSVGElement>) => {
+    e.preventDefault();
+    if (!e.ctrlKey) return; // only respond to pinch, not scroll
+    const rect = svgRef.current!.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const factor = e.deltaY > 0 ? 0.9 : 1.1;
+    const nz = Math.min(2.5, Math.max(0.2, zoom * factor));
+    setPan(p => ({ x: x - (x - p.x) * (nz / zoom), y: y - (y - p.y) * (nz / zoom) }));
+    setZoom(nz);
+  };
+
+  const edgePath = (from: string, to: string) => {
+    const fp = pos[from]; const tp = pos[to];
+    const fh = erNodeH(from); const th = erNodeH(to);
+    const fcx = fp.x + ER_NODE_W / 2; const fcy = fp.y + fh / 2;
+    const tcx = tp.x + ER_NODE_W / 2; const tcy = tp.y + th / 2;
+    let sx: number, sy: number, ex: number, ey: number;
+    if (Math.abs(tcx - fcx) >= Math.abs(tcy - fcy)) {
+      sy = fcy; ey = tcy;
+      if (tcx > fcx) { sx = fp.x + ER_NODE_W; ex = tp.x; }
+      else            { sx = fp.x;             ex = tp.x + ER_NODE_W; }
+    } else {
+      sx = fcx; ex = tcx;
+      if (tcy > fcy) { sy = fp.y + fh; ey = tp.y; }
+      else            { sy = fp.y;     ey = tp.y + th; }
+    }
+    const dx = Math.abs(ex - sx) * 0.5;
+    const dy = Math.abs(ey - sy) * 0.5;
+    const cp = Math.min(dx, dy, 120);
+    const c1x = sx + (ex > sx ? cp : -cp);
+    const c2x = ex + (ex > sx ? -cp : cp);
+    return { d: `M${sx},${sy} C${c1x},${sy} ${c2x},${ey} ${ex},${ey}`, mx: (sx + ex) / 2, my: (sy + ey) / 2 };
+  };
+
+  const reset = () => { setZoom(0.55); setPan({ x: 40, y: 40 }); setPos({ ...ER_INIT }); };
+
+  return (
+    <div className="relative w-full rounded-2xl overflow-hidden border border-border bg-[#0c0a09]" style={{ height: 680 }}>
+
+      {/* Zoom controls */}
+      <div className="absolute top-3 right-3 z-20 flex flex-col gap-1">
+        {[
+          { label: "+", action: () => setZoom(z => Math.min(z * 1.25, 2.5)) },
+          { label: "−", action: () => setZoom(z => Math.max(z / 1.25, 0.2)) },
+          { label: "⌂", action: reset },
+        ].map(btn => (
+          <button key={btn.label} onClick={btn.action}
+            className="h-8 w-8 rounded-lg bg-card/90 border border-border text-foreground flex items-center justify-center font-black text-sm hover:border-primary hover:text-primary transition-colors backdrop-blur-sm">
+            {btn.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Legend */}
+      <div className="absolute bottom-3 left-3 z-20 flex items-center gap-4 text-[9px] font-mono bg-card/90 border border-border rounded-xl px-3 py-2 backdrop-blur-sm">
+        <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-yellow-400" /> PK</span>
+        <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-purple-400" /> FK</span>
+        <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-slate-500" /> Col</span>
+        <span className="text-muted-foreground hidden sm:inline">drag nodes · pinch to zoom · drag bg to pan</span>
+      </div>
+
+      <svg ref={svgRef} className="w-full h-full select-none"
+        onMouseDown={onBgDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
+        onWheel={onWheel}
+        style={{ cursor: "grab" }}>
+        <defs>
+          <pattern id="er-dots" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse"
+            patternTransform={`translate(${((pan.x % 40) + 40) % 40},${((pan.y % 40) + 40) % 40})`}>
+            <circle cx="1" cy="1" r="1" fill="rgba(249,115,22,0.09)" />
+          </pattern>
+          <marker id="er-arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+            <path d="M0,0 L0,8 L8,4 z" fill="#f9731670" />
+          </marker>
+          <marker id="er-arr-sel" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+            <path d="M0,0 L0,8 L8,4 z" fill="#f97316" />
+          </marker>
+          <filter id="node-shadow" x="-10%" y="-10%" width="120%" height="130%">
+            <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#000" floodOpacity="0.5" />
+          </filter>
+          <filter id="node-glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="0" stdDeviation="8" floodColor="#f97316" floodOpacity="0.4" />
+          </filter>
+        </defs>
+
+        <rect width="100%" height="100%" fill="url(#er-dots)" />
+
+        <g transform={`translate(${pan.x},${pan.y}) scale(${zoom})`}>
+          {/* Edges — render first so nodes sit on top */}
+          {ER_RELATIONS.map(rel => {
+            const { d, mx, my } = edgePath(rel.from, rel.to);
+            const hi = selected === rel.from || selected === rel.to;
+            return (
+              <g key={`${rel.from}-${rel.to}`}>
+                <path d={d} fill="none"
+                  stroke={hi ? "#f97316" : "#f9731640"}
+                  strokeWidth={hi ? 2 : 1.5}
+                  strokeDasharray={hi ? undefined : "6,4"}
+                  markerEnd={hi ? "url(#er-arr-sel)" : "url(#er-arr)"}
+                />
+                <rect x={mx - 17} y={my - 10} width={34} height={18} rx={5}
+                  fill="#1c1917" stroke={hi ? "#f97316" : "#f9731450"} strokeWidth="1" />
+                <text x={mx} y={my + 5} textAnchor="middle" fontSize="9"
+                  fill={hi ? "#f97316" : "#f9731499"} fontFamily="monospace" fontWeight="bold">
+                  {rel.label}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Nodes */}
+          {TABLES.map(table => {
+            const p = pos[table.name];
+            const color = ER_TABLE_COLOR[table.name] ?? "#f97316";
+            const h = erNodeH(table.name);
+            const isSel = selected === table.name;
+            return (
+              <g key={table.name} transform={`translate(${p.x},${p.y})`}
+                onMouseDown={e => onNodeDown(e, table.name)}
+                style={{ cursor: "grab" }}
+                filter={isSel ? "url(#node-glow)" : "url(#node-shadow)"}>
+
+                {/* Body */}
+                <rect width={ER_NODE_W} height={h} rx={10}
+                  fill="#18120e" stroke={isSel ? color : color + "80"} strokeWidth={isSel ? 2 : 1.5} />
+
+                {/* Header band */}
+                <rect width={ER_NODE_W} height={ER_HEAD_H} rx={10} fill={color} />
+                <rect y={ER_HEAD_H - 10} width={ER_NODE_W} height={10} fill={color} />
+
+                {/* Table name */}
+                <text x={ER_NODE_W / 2} y={ER_HEAD_H / 2 + 5} textAnchor="middle"
+                  fontSize="11" fill="white" fontFamily="monospace" fontWeight="900"
+                  style={{ pointerEvents: "none" }}>
+                  {table.name}
+                </text>
+
+                {/* Column rows */}
+                {table.columns.map((col, i) => {
+                  const ry = ER_HEAD_H + ER_PAD / 2 + i * ER_ROW_H;
+                  const isPk = col.pk; const isFk = col.fk;
+                  const dotColor = isPk ? "#facc15" : isFk ? "#c084fc" : "#64748b";
+                  const textColor = isPk ? "#fde68a" : isFk ? "#d8b4fe" : "#94a3b8";
+                  return (
+                    <g key={col.name} transform={`translate(0,${ry})`} style={{ pointerEvents: "none" }}>
+                      {/* Subtle row separator */}
+                      {i > 0 && <line x1={10} y1={0} x2={ER_NODE_W - 10} y2={0} stroke="#ffffff08" strokeWidth="1" />}
+                      {/* Badge dot */}
+                      <circle cx={18} cy={ER_ROW_H / 2} r={3.5} fill={dotColor} />
+                      {/* Column name */}
+                      <text x={28} y={ER_ROW_H / 2 + 4} fontSize="9.5" fill={textColor}
+                        fontFamily="monospace" fontWeight={isPk ? "bold" : "normal"}>
+                        {col.name}
+                      </text>
+                      {/* Type badge (right aligned) */}
+                      <text x={ER_NODE_W - 10} y={ER_ROW_H / 2 + 4} textAnchor="end"
+                        fontSize="8" fill="#475569" fontFamily="monospace">
+                        {col.type}{col.pk ? " PK" : col.fk ? " FK" : ""}
+                      </text>
+                    </g>
+                  );
+                })}
+              </g>
+            );
+          })}
+        </g>
+      </svg>
+    </div>
+  );
+};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -907,7 +1145,7 @@ const Database = () => {
                 {[
                   { label: "Tables",        val: TABLES.length.toString() },
                   { label: "Stored Procs",  val: FUNCTIONS.length.toString() },
-                  { label: "Relationships", val: ER_EDGES.length.toString() },
+                  { label: "Relationships", val: ER_RELATIONS.length.toString() },
                   { label: "Total Rows",    val: Object.keys(tableCounts).length === 0 ? "…" : Object.values(tableCounts).reduce((a, b) => a + b, 0).toLocaleString() },
                 ].map(({ label, val }) => (
                   <div key={label} className="bg-card border rounded-2xl p-6 shadow-sm">
@@ -1324,108 +1562,10 @@ const Database = () => {
                 <div className="px-6 py-4 border-b flex items-center gap-3">
                   <GitFork className="h-5 w-5 text-primary" />
                   <h3 className="font-mono font-black">ENTITY-RELATIONSHIP DIAGRAM</h3>
-                  <div className="ml-auto flex items-center gap-4 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><span className="text-yellow-500 font-black text-base">●</span> Primary Key</span>
-                    <span className="flex items-center gap-1"><span className="text-purple-400 font-black text-base">●</span> Foreign Key</span>
-                  </div>
+                  <span className="ml-auto text-[10px] text-muted-foreground font-mono">{TABLES.length} tables · {ER_RELATIONS.length} relations</span>
                 </div>
-
-                <div className="overflow-x-auto">
-                  <svg
-                    viewBox="0 0 720 620"
-                    className="w-full"
-                    style={{ minWidth: 700, minHeight: 500 }}
-                  >
-                    {/* Grid dots */}
-                    <defs>
-                      <pattern id="grid" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
-                        <circle cx="1" cy="1" r="1" fill="rgba(249,115,22,0.12)" />
-                      </pattern>
-                      <marker id="arrow" markerWidth="8" markerHeight="8" refX="8" refY="3" orient="auto">
-                        <path d="M0,0 L0,6 L8,3 z" fill="#f9731640" />
-                      </marker>
-                    </defs>
-                    <rect width="720" height="620" fill="url(#grid)" />
-
-                    {/* Edges */}
-                    {ER_EDGES.map(edge => {
-                      const a = nodeCenter(edge.from);
-                      const b = nodeCenter(edge.to);
-                      const mx = (a.x + b.x) / 2;
-                      const my = (a.y + b.y) / 2;
-                      return (
-                        <g key={`${edge.from}-${edge.to}`}>
-                          <line
-                            x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-                            stroke="#f9731640" strokeWidth="1.5" strokeDasharray="5,4"
-                            markerEnd="url(#arrow)"
-                          />
-                          <text x={mx} y={my - 5} textAnchor="middle" fontSize="9" fill="#f97316" fontFamily="monospace" fontWeight="bold">
-                            {edge.label}
-                          </text>
-                        </g>
-                      );
-                    })}
-
-                    {/* Nodes */}
-                    {ER_NODES.map(node => {
-                      const table = TABLES.find(t => t.name === node.id)!;
-                      const pks = table.columns.filter(c => c.pk).map(c => c.name);
-                      const fks = table.columns.filter(c => c.fk).map(c => c.name);
-                      const rest = table.columns.filter(c => !c.pk && !c.fk).slice(0, 3).map(c => c.name);
-                      const rowH = 16;
-                      const headerH = 28;
-                      const totalRows = pks.length + fks.length + rest.length + (table.columns.length > pks.length + fks.length + 3 ? 1 : 0);
-                      const nodeH = headerH + totalRows * rowH + 10;
-
-                      return (
-                        <g key={node.id} transform={`translate(${node.x}, ${node.y})`}>
-                          {/* Shadow */}
-                          <rect x="3" y="3" width={node.w} height={nodeH} rx="8" fill="rgba(0,0,0,0.3)" />
-                          {/* Body */}
-                          <rect width={node.w} height={nodeH} rx="8" fill="#1c1917" stroke={node.color} strokeWidth="1.5" />
-                          {/* Header */}
-                          <rect width={node.w} height={headerH} rx="8" fill={node.color} />
-                          <rect y={headerH - 8} width={node.w} height={8} fill={node.color} />
-                          <text x={node.w / 2} y={17} textAnchor="middle" fontSize="10" fill="white" fontFamily="monospace" fontWeight="900">
-                            {node.label}
-                          </text>
-
-                          {/* Columns */}
-                          {pks.map((col, i) => (
-                            <g key={col} transform={`translate(0, ${headerH + 6 + i * rowH})`}>
-                              <text x="10" y="11" fontSize="9" fill="#facc15" fontFamily="monospace" fontWeight="bold">🔑 {col}</text>
-                            </g>
-                          ))}
-                          {fks.map((col, i) => (
-                            <g key={col} transform={`translate(0, ${headerH + 6 + (pks.length + i) * rowH})`}>
-                              <text x="10" y="11" fontSize="9" fill="#c084fc" fontFamily="monospace">⬡ {col}</text>
-                            </g>
-                          ))}
-                          {rest.map((col, i) => (
-                            <g key={col} transform={`translate(0, ${headerH + 6 + (pks.length + fks.length + i) * rowH})`}>
-                              <text x="10" y="11" fontSize="9" fill="#94a3b8" fontFamily="monospace">· {col}</text>
-                            </g>
-                          ))}
-                          {table.columns.length > pks.length + fks.length + 3 && (
-                            <g transform={`translate(0, ${headerH + 6 + (pks.length + fks.length + 3) * rowH})`}>
-                              <text x="10" y="11" fontSize="8" fill="#475569" fontFamily="monospace">+ {table.columns.length - pks.length - fks.length - 3} more...</text>
-                            </g>
-                          )}
-                        </g>
-                      );
-                    })}
-                  </svg>
-                </div>
-
-                {/* Legend */}
-                <div className="px-6 py-4 border-t grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {ER_EDGES.map(e => (
-                    <div key={`${e.from}-${e.to}`} className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
-                      <span className="text-orange-500 font-black">{e.label}</span>
-                      <span className="truncate">{e.from} → {e.to}</span>
-                    </div>
-                  ))}
+                <div className="p-3">
+                  <ERDiagram />
                 </div>
               </div>
             </motion.div>

@@ -45,6 +45,17 @@ const Book = () => {
   const { user } = useAuth();
   const booking = state as BookingState;
 
+  useEffect(() => {
+    if (!user) {
+      navigate("/login", {
+        state: {
+          returnTo: "/book",
+          bookingState: state,
+        },
+      });
+    }
+  }, [user, navigate, state]);
+
   const [step, setStep] = useState(0);
   const [passengers, setPassengers] = useState<Passenger[]>([{ name: "", age: "", sex: "M" }]);
   const [payMode, setPayMode] = useState("UPI");
@@ -187,13 +198,13 @@ const Book = () => {
 
     const txn = `TXN${Date.now()}`;
     setTransNo(txn);
-    const today = new Date().toISOString().split("T")[0];
+    const nowIso = new Date().toISOString();
 
     const { error: payErr } = await supabase.rpc("make_payment", {
       trans_no: txn,
       pnr_number: pnrNo,
       user_code: user.user_id,
-      pay_date: today,
+      pay_date: nowIso,
       amount: totalFare,
       pay_mode: payMode,
     });

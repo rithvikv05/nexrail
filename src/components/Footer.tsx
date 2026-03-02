@@ -4,7 +4,7 @@ const Footer = () => {
   return (
     <footer className="border-t bg-card mt-12">
       <div className="container mx-auto px-4 py-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
@@ -19,25 +19,7 @@ const Footer = () => {
             <div className="space-y-2 text-sm text-muted-foreground">
               <p className="hover:text-foreground cursor-pointer transition-colors">Book Tickets</p>
               <p className="hover:text-foreground cursor-pointer transition-colors">PNR Status</p>
-              <p className="hover:text-foreground cursor-pointer transition-colors">Live Train Status</p>
               <p className="hover:text-foreground cursor-pointer transition-colors">Train Schedule</p>
-            </div>
-          </div>
-          <div>
-            <h4 className="font-semibold text-foreground mb-3 text-sm">Company</h4>
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p className="hover:text-foreground cursor-pointer transition-colors">About Us</p>
-              <p className="hover:text-foreground cursor-pointer transition-colors">Contact</p>
-              <p className="hover:text-foreground cursor-pointer transition-colors">Careers</p>
-              <p className="hover:text-foreground cursor-pointer transition-colors">Blog</p>
-            </div>
-          </div>
-          <div>
-            <h4 className="font-semibold text-foreground mb-3 text-sm">Legal</h4>
-            <div className="space-y-2 text-sm text-muted-foreground">
-              <p className="hover:text-foreground cursor-pointer transition-colors">Privacy Policy</p>
-              <p className="hover:text-foreground cursor-pointer transition-colors">Terms of Service</p>
-              <p className="hover:text-foreground cursor-pointer transition-colors">Refund Policy</p>
             </div>
           </div>
         </div>

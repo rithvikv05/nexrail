@@ -14,6 +14,7 @@ interface Booking {
   from_station_name: string;
   to_station_name: string;
   booking_status: string;
+  payment_date: string | null;
 }
 
 type Tab = "Personal Info" | "My Bookings" | "Settings";
@@ -68,7 +69,11 @@ const Profile = () => {
       });
       // Load bookings
       const { data: bd } = await supabase.rpc("fetch_user_reservations", { user_code: user.user_id });
-      setBookings((bd || []).slice().sort((a: Booking, b: Booking) => b.pnr_no - a.pnr_no));
+      setBookings((bd || []).slice().sort((a: Booking, b: Booking) => {
+        if (!a.payment_date) return 1;
+        if (!b.payment_date) return -1;
+        return new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime();
+      }));
       setLoading(false);
     };
     load();

@@ -1,15 +1,16 @@
-import { Train, User, Menu, X, LogOut } from "lucide-react";
+import { Train, User, Menu, X, LogOut, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const navLinks = [
   { label: "Book Tickets", to: "/" },
   { label: "PNR Status",  to: "/pnr-status" },
-  { label: "Live Train",  to: "/live-train" },
-  { label: "Database",    to: "/database" },
+  { label: "Train Schedule", to: "/train-schedule" },
+  { label: "Database",      to: "/database" },
 ];
 
 const Navbar = () => {
@@ -18,6 +19,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogout = () => {
     logout();
@@ -69,6 +71,13 @@ const Navbar = () => {
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-4 flex-1 justify-end">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
           {user ? (
             <>
               <Link to="/profile">
@@ -116,16 +125,21 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Toggle */}
-        <button 
-          className="md:hidden p-2" 
-          onClick={() => setMobileOpen(!mobileOpen)}
-        >
-          {mobileOpen ? (
-            <X className="text-foreground" />
-          ) : (
-            <Menu className="text-foreground" />
-          )}
-        </button>
+        <div className="md:hidden flex items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
+          <button
+            className="p-2"
+            onClick={() => setMobileOpen(!mobileOpen)}
+          >
+            {mobileOpen ? <X className="text-foreground" /> : <Menu className="text-foreground" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
